@@ -1,0 +1,497 @@
+<!DOCTYPE HTML>
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+      <title>SUPER-Market</title>
+	  <style>
+       body, h2
+	   {background-color:#F0F0F0;
+	   font-weight:bold;color:#484848;}
+	   textarea, input
+	   {background-color:#000000;
+	   font-weight:bold;color:#FFFFFF;}
+     </style>
+      <script>
+         // Global Variables
+         var currentLoc = 0;// Starting Location 
+		 var MAX_LOC = 8; //Specifies maximum number of Locations
+		 var stillPlaying= true; //Starts and ends game loop
+		 var command= "";//creates an empty string for player input commands
+		 var moves = 0 //counts the number of moves of the player
+		 var int_score = 0 //counts the player's score
+		 
+
+	    //Creates the object constructor of a location (LOC) 
+		var loc = function(id, name, descrip, item, visited) {
+		this.id = id;
+		this.name = name;
+		this.descrip = descrip;
+		this.item = item;
+		this.visited = visited;
+		
+		this.toString= function(){
+		return "[Location " +this.id + "]\n" +this.name +"\n" + this.descrip;
+		}
+		}
+		
+		 //creates Location Array
+		 var locs = [MAX_LOC];
+		 //initializes all locations in Location Array
+		 locs[0]= new loc(0, "Lobby", "You are in the LOBBY of the Super-market. " 
+		                              +"There are a row of CARTS near you and "
+									  +"a stand of shopping BROCHUREs next to that."
+									  , "Cart, Brochure", 0);
+									  
+		 locs[1]= new loc(1, "Produce","You are in the PRODUCE Section. Oh and look "
+									   +"to those left are those discount GRAPES.", "Grapes", 0);
+									   
+		 locs[2]= new loc(2, "Cash Register","You are at the Cash Registers. "
+									  +"A cute CASHIER GIRL notices you and smiles.", "Cashier Girl", 0);
+									  
+		 locs[3]= new loc(3, "Aisle4", "You are in Aisle 4. A shaking and frightened-looking"
+										+" SHOPPER quickly rushes down the aisle.", "Shopper",0);
+									  
+		 locs[4]= new loc(4, "Meats", "You are in the Meat Section. It is ominously quiet"
+                               		 +" and you can't see anyone else near you in the store."
+									 +" The only thing you notice is a small sign next to " 
+									 +"the CALL BELL on the meat counter, that reads RING "
+									 + "for the Grub Gang." , "GRUB GANG",0);
+									  
+		 locs[5]= new loc(5, "Bakery", "You are in the Bakery. You are surrounded on "
+		                              +"all sides by the smell of delicious pasteries"
+									  +" and pies. But straight ahead of you,"
+									  +" a filthy monsterous looking BAKER with a "
+									  +"lazy eye is staring you down.", "Baker", 0);
+									  
+		 locs[6]= new loc(6, "Aisle8", "You are in Aisle 8. As if all the lights in the store "
+										+"are turned to aim at it, the BLACK DRAGON OPAL shines"
+										+ "in the middle of the aisle. For the low price of $4.72"
+										+" too!","Black Dragon Opal",0);
+									  
+		 locs[7]= new loc(7, "Dairy", "You are in the Dairy Section. Next to the myriad "
+									  +"of fancy cheeses, there are the milk and eggs you've been "
+									  +"looking for. Oddly enough, there seems to be a gallon of "
+									  +"GLOWING MILK and a carton of NEON EGGS in the middle of"
+									  +"the shelf.", "Glowing Milk, Neon Eggs",0);
+		   
+		 // Set up the navigation matrix for Locations
+         var nav = [
+         /* N   S   E   W */
+         /* 0   1   2   3 */
+         [  1, -1,  2, -1 ], //loc0 Lobby
+         [ -1,  0,  3, -1 ], //loc1 Produce
+         [  3, -1,  5,  0 ], //loc2 Cash Registers
+		 [  4,  2,  6,  1 ], //loc3 Aisle 4
+		 [ -1,  3,  7, -1 ], //loc4 Meats
+		 [  6, -1, -1,  2 ], //loc5 Bakery
+		 [  7,  5, -1,  3 ], //loc6 Aisle 8
+		 [ -1,  6, -1,  4 ], //loc7 Dairy
+      ] 
+	  
+	  //Creates the object constructor of an ITEM
+		function item (id , name , descrip, taken) {
+
+		   this.id          = id;
+		   this.name        = name;
+		   this.descrip = descrip;
+		   this.taken       = taken;
+		   
+		   this.toString= function(){
+		return "[Item " +this.id + "]\n" +this.name +"\n" + this.descrip;
+		}
+		}
+		
+		var item0 = new item(0, "Cart", "You now have something to put your groceries in! Ho0ray!", false);
+		
+		var item1 = new item(1, "Brochure", "You skim the shopping brochure. Welcome to the SUPER-Market"
+											+ " blah blah blah... This week's special is discount GRAPES!"
+											+ " blah blah blah And our SUPER item of the day is a rare one of a"
+											+ "kind BLACK DRAGON OPAL for only $4.72 in Aisle 8!"
+											+" Dont miss out on this KILLER deal!"
+											, false);
+											
+		var item2 = new item(2, "Glowing Milk", "Hmmmm kinda weird this milk is glowing. Maybe it has a extra "
+												+"calcium or something.", false);
+												
+		var item3 = new item(3, "Neon Eggs", "I might regret this decision when making breakfast later.", false);
+		
+		var item4 = new item(4, "Black Dragon Opal", "W0o0o0o0o0o0o I cant believe this rare amorphous mineraloid is only 5 bucks!", false);
+		
+		var item5 = new item(5, "Baker", "The Baker hocks a loogie at your feet.\nBAKER- Are you here to defeat them?"
+										+"\nRespond with:(WHO BAKER or YES BAKER)", false);
+		
+		var item6 = new item(6, "Cashier Girl", "+25 points!", false);
+		
+		var item7 = new item(7, "RING FOR GRUB GANG", "Out of pits of meat freezer the GRUB GANG arrive! The Broccoli Behemoth," 
+											+" the Salami Slasher and the Jello Giant! FIGHT?", false);
+		
+		var item8 = new item(8, "Discount Grapes", "A bunch of grapes for 82 cents. Whadda deal!", false);
+		
+		var item9 = new item(9, "Shopper", "Shopper-DONT GO IN THE MEAT SECTION!", false);
+	
+		//Creates inventory
+		var items = new Array();
+		
+		items[0] = item0;
+		items[1] = item1;
+		items[2] = item2;
+		items[3] = item3;
+		items[4] = item4;
+		items[5] = item5;
+		items[6] = item6;
+		items[7] = item7;
+		items[8] = item8;
+		
+		
+		
+        
+		//FUNCTIONS
+		
+		//Takes a new strings message and displays it in the Text-Area 
+		function updateText(msg) {
+		if (stillPlaying){ //updates text area as long as game isn't over or else stops updating text area
+        var taGet = document.getElementById("ta");
+		var history = taGet.value;
+        taGet.value = history +"\n"+ "\n" + msg  ;
+		document.getElementById("ta").scrollTop = document.getElementById("ta").scrollHeight; //auto scroll to bottom of text area 
+		}
+		}
+		//Initializes game, on load displays opening text and first location description
+		function init() {
+		var taGet = document.getElementById("ta");
+	    var welcomeString= 'WELCOME TO SUPER MARKET. \nYou blink back to reality.'
+		 +' The rumbles of shopping carts and hordes of shoppers bring '
+		 +'back your awareness. You are in a super-market. Oh yeah, you needed'
+		 +' to get milk and eggs. Okay sounds like an easy enough plan.'
+		 +"\n"+ "\n"+  locs[currentLoc].descrip;
+		 taGet.value = welcomeString;
+		 }
+		 
+		//Takes in a int direction and changes current location to new location, while updating text of new location
+		function move(dir) {
+		var newloc = nav[currentLoc][dir];
+		if (newloc < 0){// INVALID MOVEMENT
+		updateText('You cannot travel that way!');
+		}else {
+		currentLoc = newloc;
+		updateText(locs[currentLoc].descrip);
+		addMoves();
+		if (locs[currentLoc].visited===0){
+		addScore(5);
+		locs[currentLoc].visited = locs[currentLoc].visited + 1;
+		}
+		}
+		}
+		
+		//Shows player his Help Options in text area
+		function help(){
+		updateText("HELP INSTRUCTIONS:\nSUPER-Market is a text-based adaventure game that relies on"
+		+" players' text input to navigate through the game field. For certain commands, such as "
+		+"directional movement, help and quit, the player can click option buttons. For all other "
+		+"commands, the text input box is required.\nA List of Functional Text Input Commands:\n"
+		+"TAKE [item name]: The most common command; which is used to retrieve take-able items.\n"
+		+"TALK TO [title of person]: The command used to engage in coversation with a person.\n"
+		+"SMILE AT [title of person]: Used in one specfic and appropiate instence in the game.\n"
+		+"RING [item name]: Used in one specfic and appropiate instence in the game.\n"
+		+"NORTH or N: To move north.\n"
+		+"SOUTH or S: To move south.\n"
+		+"EAST or E: To move east.\n"
+		+"WEST or W: To move west.\n"
+		+"QUIT or Q: To quit the game.\n"
+		+"HELP or H: To view these help instructions.\n"
+		+"INVENTORY or I: To view all the current items you have attained and people you have talked to.\n"
+		+"\nAll attainable items or interactive people in the game are displayed in all CAPITAL LETTERS. "
+		+"All other functional user's commands are explained as options within certain instences during "
+		+"gameplay.\n\nGL HF");
+		}
+		
+		//Shows player his Inventory in text area
+		function Inv(){
+		updateText("Inventory:"); 
+		for (var i=0;i<items.length;i++){ 
+		if (items[i].taken===true){
+		updateText(items[i]);}
+		};
+		
+		}
+		//Allows player to quit and end game
+		function quit(){
+		updateText('Are you sure you want to leave the SUPER-Market? \n (YES I QUIT or SHOP ON)');
+		}
+		
+		//Ends game
+		function gameOver(){
+		var scoreGet = document.getElementById("score");
+		var movesGet = document.getElementById("moves");
+		var s = parseInt(scoreGet.value);
+		var m = parseInt(movesGet.value);
+		var sm = s/m;
+		updateText("GAME OVER\nFINAL POINTS/MOVES RATIO:" + sm);
+		stillPlaying = false;
+		}
+		
+		//Retrieves the command from the submit GO box
+		function submitCommand(){
+		var getCmd = document.getElementById("command");
+		command = getCmd.value;
+		}
+		
+		//Uses the enter key to fire submitCommand()
+		document.addEventListener('keypress', function(ev) {
+		if (ev.keyCode == 13) { //enter key
+		submitCommand();
+		commandReader();
+		clearTextBox();
+		}})
+		
+		//clears text box, called after enter key is hit
+		function clearTextBox(){
+		var getCmd = document.getElementById("command");
+		getCmd.value = "";
+		}
+		
+		//Takes in an amount of points and adds them to the current score
+		function addScore(points){
+		var scoreGet = document.getElementById("score");
+		scoreGet.value = parseInt(scoreGet.value) + points ;
+		}
+		
+		//Adds one to the current amount of moves moved
+		function addMoves(){
+		var movesGet = document.getElementById("moves");
+		movesGet.value = parseInt(movesGet.value) + 1;
+		}
+		
+		
+		//interprets user's text commands from text box and calls assigned functions
+		function commandReader(){
+		if(command.toLowerCase() =="help" || command.toLowerCase() =="h"){  		    //displays help instructions
+			help();
+		
+		}else if (command.toLowerCase() =="quit" || command.toLowerCase() =="q"){ 	    //displays quit options
+			quit();
+		
+		}else if (command.toLowerCase() =="yes i quit"){                          	    //confirms quitting 
+			gameOver();
+		
+		}else if (command.toLowerCase() =="shop on"){									//decides against quitting
+			updateText("Phewwww. Still need to get those milk and eggs.");                  
+		
+		}else if (command.toLowerCase() =="i" || command.toLowerCase() =="inventory"){  //displays inventory;all attained
+			Inv();                                                                      //items and people talked to 
+		
+		}else if (command.toLowerCase() =="north" || command.toLowerCase() == "n"){     //moves player north
+			move(0);
+		
+		}else if (command.toLowerCase() =="south" || command.toLowerCase() == "s"){     //moves player south
+			move(1);
+		
+		}else if (command.toLowerCase() =="east" || command.toLowerCase() == "e"){      //moves player east 
+			move(2);
+		
+		}else if (command.toLowerCase() =="west" || command.toLowerCase() == "w"){      //moves player west
+			move(3);
+		
+		}else if (command.toLowerCase() == "take cart"){								//attains cart item
+				if (currentLoc==0 && item0.taken==false){
+					updateText("CART TAKEN. \n" + item0.descrip);
+					item0.taken= true;
+					addScore(10);
+		        }else if (currentLoc==0 && item0.taken==true){
+					updateText("Already Taken");
+				}else if (currentLoc!==0){
+					updateText("Not in this room!");}
+				
+		}else if (command.toLowerCase() == "take brochure"){                           //attains brochure item
+				if (currentLoc==0 && item1.taken==false){
+					updateText("BROCHURE TAKEN.\n" + item1.descrip);
+					item1.taken= true;
+					addScore(10);
+				}else if (currentLoc==0 && item1.taken==true){
+					updateText("Already Taken");
+				}else if (currentLoc!==0){
+					updateText("Not in this room!");}
+				
+		}else if (command.toLowerCase() == "take glowing milk" ||                      //attains glowing milk item
+				command.toLowerCase() == "take milk"){
+				if (item0.taken==false){														
+					updateText("You have no where to put your groceries!");
+				}else
+					if (currentLoc==7 && item2.taken==false){
+					updateText("GLOWING MILK TAKEN.\n" + item2.descrip);
+					item2.taken= true;
+					addScore(10);
+				}else if (currentLoc==7 && item2.taken==true){
+					updateText("Already Taken");
+				}else if (currentLoc!==7){
+					updateText("Not in this room!");}
+				
+		
+		}else if (command.toLowerCase() == "take neon eggs" ||						   //attains neon eggs item
+				  command.toLowerCase() == "take eggs"){
+				if (item0.taken==false){
+					updateText("You have no where to put your groceries!");
+					}else if (currentLoc==7 && item3.taken==false){
+						updateText("NEON EGGS TAKEN.\n" + item3.descrip);
+						item3.taken= true;
+						addScore(10);
+					}else if (currentLoc==7 && item3.taken==true){
+						updateText("Already Taken");
+					}else if (currentLoc!==7){
+						updateText("Not in this room!");}
+				
+		}else if (command.toLowerCase() == "take black dragon opal" ||                 //attains black dragon opal item
+				  command.toLowerCase() == "take opal"){
+				if (item0.taken==false){
+					updateText("You have no where to put your groceries!");
+					}else if (currentLoc==6 && item4.taken==false){
+						updateText("BLACK DRAGON OPAL TAKEN.\n" + item4.descrip);
+						item4.taken= true;
+						addScore(10);
+					}else if (currentLoc==6 && item4.taken==true){
+						updateText("Already Taken");
+					}else if (currentLoc!==6){
+						updateText("Not in this room!");}
+				
+		}else if (command.toLowerCase() == "take grapes" ||                           //attains grape item
+					  command.toLowerCase() == "take discount grapes" ){
+				if (item0.taken==false){
+					updateText("You have no where to put your groceries!");
+					}else if (currentLoc==1 && item8.taken==false){
+						updateText("GRAPES TAKEN\n"+ item8.descrip);
+						item8.taken= true;
+						addScore(15);
+					}else if (currentLoc==1 && item8.taken==true){
+						updateText("Already Taken");
+					}else if (currentLoc!==1){
+						updateText("Not in this room!");}
+				
+		}else if (command.toLowerCase() == "talk to shopper" ||                      //talks to shopper
+				  command.toLowerCase() == "talk shopper"){
+				if (currentLoc==3 && item9.taken==false){
+					updateText(item9.descrip);
+					item9.taken= true;
+					addScore(10);
+				}else if (currentLoc==3 && item9.taken==true){
+					updateText("Already talked to");
+				}else if (currentLoc!==3){
+					updateText("Wrong room!");}
+				
+		}else if (command.toLowerCase() == "talk to baker" ||                       //talks to baker
+			      command.toLowerCase() == "talk baker"){
+				if (currentLoc==5 && item5.taken==false){
+					updateText(item5.descrip);
+					item5.taken= true;
+					addScore(10);
+				}else if (currentLoc==5 && item5.taken==true){
+					updateText("Already Talked To");
+				}else if (currentLoc!==5){
+					updateText("Not in this room!");}	
+				
+		}else if (command.toLowerCase() == "who baker"){                           //questions baker
+				if (currentLoc==5){
+					updateText("The Baker chops off your head with a "+
+					"machete for questioning him. Never Question Bakers.");
+					gameOver();
+				}else if (currentLoc!==5){
+					updateText("Wrong room!");}
+				
+		}else if (command.toLowerCase() == "yes baker"){                          //responds agreeably with baker
+				if (currentLoc==5){
+					updateText("You will need the Black Dragon Opal. Also do not "
+					+"forget to get your milk and eggs.");
+				}else if (currentLoc!==5){
+					updateText("Wrong room!");}
+				
+		}else if (command.toLowerCase() == "smile back" ||                        //smiles at cashier
+				  command.toLowerCase() == "smile at cashier" ||
+		          command.toLowerCase() == "smile at cashier girl"){
+				if (currentLoc==2 && item6.taken==false){
+					updateText("SMILE SUCCESSFUL!\n"+item6.descrip);
+					item6.taken= true;
+					addScore(25);
+				}else if (currentLoc==2 && item6.taken==true){
+					updateText("Already smiled at");
+				}else if (currentLoc!==2){
+					updateText("Wrong room!");}
+				
+		}else if (command.toLowerCase() == "ring bell" ||                        //rings bell to call upon enemies 
+				  command.toLowerCase() == "ring call bell" || 
+				  command.toLowerCase() == "ring"){
+				if (currentLoc==4 && item7.taken==false){
+					updateText(item7.descrip);
+					item7.taken= true;
+				}else if (currentLoc!==4){
+					updateText("Wrong room!");}
+				
+		}else if (command.toLowerCase() == "fight" ){                           //engages in final battle and ends game
+				if (currentLoc==4 && item2.taken==true && item3.taken==true && item4.taken==true){
+					updateText("You throw the Glowing Milk at the The Broccoli Behemoth, leaving him wet,"
+				           +" discouraged and defeated. You fling Neon Eggs at the Jello Giant. Jello "
+						   +"and eggs is a horrible combination. He implodes! The Black Dragon Opal in "
+						   +"your cart begins to rumble and glow. Suddenly it flies from your cart and "
+						   +"soars stright at the Salami Slasher. It hits him straigh in his Salami face "
+						   +"and he is flung into Oblivion. You saved the Super-Market! But you still "
+						   +"need milk and eggs");
+					addScore(50);
+					gameOver();
+				}else if (currentLoc!==4){
+					updateText("Wrong room!");}
+				else if (item2.taken==false || item3.taken==false || item4.taken==false){
+					updateText("You were not ready. YOU LOSE");
+					gameOver();}}
+		
+		}
+    </script>
+    </head>
+    <body onload="init();">
+    <img src="C:\Users\Alex\Documents\GitHub\SoftwareDev1\Project1\sm.gif" alt="SUPERMarket" height="75" width="300"> 
+	<br>
+    <textarea readonly id="ta" style="width:700px; height:400px;">
+    </textarea>
+	
+	<img src="C:\Users\Alex\Documents\GitHub\SoftwareDev1\Project1\Map.gif" alt="Map"height="410" width="450" >
+    <br>
+	<input type="text" id="command" >
+	<input type="button"
+             value = "Go"
+             onclick="submitCommand();
+					  commandReader();
+					  clearTextBox();">
+	<br>
+    <input type="button"
+             value = "North"
+             onclick="move(0);">
+    <input type="button"
+             value = "South"
+			 onclick="move(1);">
+	<input type="button"
+             value = "West"
+             onclick="move(3);">
+    <input type="button"
+             value = "East"
+             onclick="move(2);">
+	<br>
+	<input type="button"
+           value = "Help"
+           onclick="help();">
+	<input type="button"
+           value = "Quit"
+           onclick="quit();">
+	<br>
+	Moves:<input type="text"
+				 id="moves" 
+				 size="1"
+				 value="0">
+	<br>
+	 Score : <input type="text" 
+					id="score" 
+					size="1"
+					value="0">
+	
+	
+   </body>
+</html>
+
+
+
