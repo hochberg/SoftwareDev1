@@ -158,7 +158,7 @@ public class game2 {
 
         Freezer loc8 = new Freezer(8);
         loc8.setName("FREEZER");
-        loc8.setDescrip("THE FREEZER!\nYou are face by an horrifying abomination: THE "
+        loc8.setDescrip("THE FREEZER!\nYou are faced by an horrifying abomination: THE "
                 + "BROCCOLI BEHEMOTH. Nothing to do now but fight!\nTo fight with "
                 + "grocery items, type USE ITEM_NAME.\nTo fight with you fists, type"
                 + " PUNCH.");
@@ -377,7 +377,7 @@ public class game2 {
             }else if (items[2].getTaken()){
                 System.out.println("Already Taken");
             }else if (!items[0].getTaken()){
-                System.out.println("Nothing to put it in");
+                System.out.println("You don't have a cart to put it in");
             } else {
                 System.out.println("GLOWING MILK TAKEN. \n" + items[2].getDescrip());
                 items[2].setTaken(true);
@@ -389,7 +389,7 @@ public class game2 {
             }else if (items[3].getTaken()){
                 System.out.println("Already Taken");
             }else if (!items[0].getTaken()){
-                System.out.println("Nothing to put it in");
+                System.out.println("You don't have a cart to put it in");
             } else {
                 System.out.println("NEON EGGS TAKEN. \n" + items[3].getDescrip());
                 items[3].setTaken(true);
@@ -401,7 +401,7 @@ public class game2 {
             }else if (items[4].getTaken()){
                 System.out.println("Already Taken");
             }else if (!items[0].getTaken()){
-                System.out.println("Nothing to put it in");
+                System.out.println("You don't have a cart to put it in");
             } else {
                 System.out.println("BLACK DRAGON OPAL TAKEN. \n" + items[4].getDescrip());
                 items[4].setTaken(true);
@@ -413,7 +413,7 @@ public class game2 {
             }else if (items[8].getTaken()){
                 System.out.println("Already Taken");
             }else if (!items[0].getTaken()){
-                System.out.println("Nothing to put it in");
+                System.out.println("You don't have a cart to put it in");
             } else {
                 System.out.println("GRAPES TAKEN. \n" + items[8].getDescrip());
                 System.out.println("AND you find 7 peas under the bag of grapes!");
@@ -450,7 +450,6 @@ public class game2 {
                         "machete for questioning him. Never Question Bakers.");
             addScore(-100);
             gameover();
-
             }
         }else if ( command.equalsIgnoreCase("yes") ) {      //when talking to baker, answer him
             if (currentLoc!=5){
@@ -527,7 +526,7 @@ public class game2 {
                 System.out.println("POW! "+ playerAttack + " damage!");
                 bossHealth= bossHealth-playerAttack;
                 myHealth= myHealth- bossAttack;
-                System.out.println("BOOM! The Brocolli Behemoth counters! " +bossAttack+" damage!");
+                System.out.println("BOOM! The Broccoli Behemoth counters! " +bossAttack+" damage!");
                 if (bossHealth<1){
                     System.out.println("YOU SAVED THE SUPER-MARKET FROM UTTER DESTRUCTION!\n YOU WIN");
                     addScore(100);
@@ -546,7 +545,7 @@ public class game2 {
                     +"leaving him wet and discouraged!"+ playerAttack + " damage!");
             bossHealth= bossHealth-playerAttack;
             myHealth= myHealth- bossAttack;
-            System.out.println("SLAM! The Broccolli Behemoth counters! " +bossAttack+" damage!");
+            System.out.println("SLAM! The Broccoli Behemoth counters! " +bossAttack+" damage!");
             if (bossHealth<1){
                 System.out.println("YOU SAVED THE SUPER-MARKET FROM UTTER DESTRUCTION!\n YOU WIN");
                 addScore(100);
@@ -562,10 +561,10 @@ public class game2 {
         int playerAttack= 30;
         int bossAttack= 20+randomMult;
         System.out.println("KAPOWIE! You snipe all 12 neon eggs at him,"
-                +"stunnin him and hurting his broccolli pride!"+ playerAttack + " damage!");
+                +"stunning him and hurting his broccoli pride!"+ playerAttack + " damage!");
         bossHealth= bossHealth-playerAttack;
         myHealth= myHealth- bossAttack;
-        System.out.println("SMACK! The Broccolli Behemoth counters! " +bossAttack+" damage!");
+        System.out.println("SMACK! The Broccoli Behemoth counters! " +bossAttack+" damage!");
         if (bossHealth<1){
         System.out.println("YOU SAVED THE SUPER-MARKET FROM UTTER DESTRUCTION!\n YOU WIN");
         addScore(100);
@@ -640,7 +639,7 @@ public class game2 {
                 +"directional movement, help and quit, the player can click option buttons. For all other "
                 +"commands, the text input box is required.\nA List of Functional Text Input Commands:\n"
                 +"TAKE [item name]: The most common command; which is used to retrieve take-able items.\n"
-                +"TALK TO [title of person]: The command used to engage in coversation with a person.\n"
+                +"TALK TO [title of person]: The command used to engage in conversation with a person.\n"
                 +"SMILE AT [title of person]: Used in one specific and appropriate instance in the game.\n"
                 +"RING [item name]: Used in one specific and appropriate instance in the game.\n"
                 +"NORTH or N: To move north.\n"
